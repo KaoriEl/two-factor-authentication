@@ -11,8 +11,6 @@ WORKDIR /var/www/investments-two-factor-authentication
 
 RUN go build -o /app/two-factor-authentication -v /var/www/investments-two-factor-authentication/cmd/investments-two-factor-authentication/main.go
 
-COPY ./configs/.env /app/configs/.env
-
 WORKDIR /app
 
 RUN apk add --no-cache go
