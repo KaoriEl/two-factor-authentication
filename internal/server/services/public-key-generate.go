@@ -70,7 +70,7 @@ func oneTimePassword(key []byte, value []byte) uint32 {
 	// размер до 6 цифр
 	// один миллион - это первое число из 7 цифр, поэтому остаток
 	// деления всегда будет возвращать < 7 цифр
-	pwd := number % 1000000
+	pwd := number % 100000
 
 	return pwd
 }
