@@ -1,0 +1,58 @@
+stages:
+  - test
+  - build
+  - deploy
+
+Docker build stage:
+  stage: build
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - echo "Build widgets"
+    - docker build -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/${CI_PROJECT_NAME}-two-factor-authentication:stage -f ./build/package/production/Dockerfile .
+    - echo "Push widgets"
+    - docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}/${CI_PROJECT_NAME}-two-factor-authentication:stage
+  tags:
+    - invest-docker
+  only:
+    - stage
+
+Deploy to stage:
+  stage: deploy
+  script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - cd ~/investments-stage
+    - docker-compose pull
+    - docker-compose up -d --force-recreat
+  tags:
+    - invest-stage-shell
+  only:
+    - stage
+
+
+Docker build prod:
+  stage: build
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - echo "Build widgets"
+    - docker build -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/${CI_PROJECT_NAME}-two-factor-authentication:prod -f ./build/package/production/Dockerfile .
+    - echo "Push widgets"
+    - docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}/${CI_PROJECT_NAME}-two-factor-authentication:prod
+  tags:
+    - invest-docker
+  only:
+    - master
+
+Deploy to prod:
+  stage: deploy
+  script:
+    - ssh prod "docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY} && cd /home/gitlab-runner/investments-prod && docker-compose pull && docker-compose up -d --force-recreat"
+  tags:
+    - invest-stage-shell
+  only:
+    - master
