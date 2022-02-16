@@ -25,6 +25,12 @@ var routes = Routes{
 		"/GivePublicKey",
 		controllers.Index,
 	},
+	Route{
+		"GivePublicKeyAdmin",
+		"POST",
+		"/GivePublicKeyAdmin",
+		controllers.Index,
+	},
 }
 
 //NewRouter func

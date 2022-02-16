@@ -76,13 +76,13 @@ func oneTimePassword(key []byte, value []byte) uint32 {
 
 	// игнорировать старший бит согласно RFC 4226
 	hashParts[0] = hashParts[0] & 0x7F
-
+	fmt.Println(toUint32(hashParts))
 	number := toUint32(hashParts)
 
 	// размер до 6 цифр
 	// один миллион - это первое число из 7 цифр, поэтому остаток
 	// деления всегда будет возвращать < 7 цифр
-
+	fmt.Println(number)
 	pwd := number % 1000000
 
 	return pwd
