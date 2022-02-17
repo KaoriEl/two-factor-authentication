@@ -6,31 +6,43 @@ import (
 	"encoding/base32"
 	"fmt"
 	_struct "main/internal/struct"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 )
 
 func GivePublicKey(v _struct.Default, c chan string) {
-	fmt.Println("3")
 	input := v.SecretKey
-
+	fmt.Println(input)
 	// декодируем ключ из первого аргумента
-	inputNoSpaces := strings.Replace(input, " ", "", -1)
-	inputNoSpacesUpper := strings.ToUpper(inputNoSpaces)
-	key, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(inputNoSpacesUpper)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
-	}
+
+	key, _ := convertSecret(input)
 
 	// генерируем одноразовый пароль, используя время с 30-секундными интервалами
 	epochSeconds := time.Now().Unix()
+
 	pwd := oneTimePassword(key, toBytes(epochSeconds/30))
 
 	c <- strconv.Itoa(int(pwd))
 
+}
+
+func convertSecret(secret string) ([]byte, error) {
+	inputNoSpaces := strings.Replace(secret, " ", "", -1)
+	decodeKey, err := base32.StdEncoding.DecodeString(checkSecret(strings.ToUpper(inputNoSpaces)))
+	if err != nil {
+		return nil, err
+	}
+	return decodeKey, nil
+}
+
+func checkSecret(secret string) string {
+	length := len(secret)
+	if length%8 == 0 {
+		return secret
+	}
+	n := length/8*8 + 8 - length
+	return secret + strings.Repeat("=", n)
 }
 
 func toBytes(value int64) []byte {
@@ -64,13 +76,14 @@ func oneTimePassword(key []byte, value []byte) uint32 {
 
 	// игнорировать старший бит согласно RFC 4226
 	hashParts[0] = hashParts[0] & 0x7F
-
+	fmt.Println(toUint32(hashParts))
 	number := toUint32(hashParts)
 
 	// размер до 6 цифр
 	// один миллион - это первое число из 7 цифр, поэтому остаток
 	// деления всегда будет возвращать < 7 цифр
-	pwd := number % 100000
+	fmt.Println(number)
+	pwd := number % 1000000
 
 	return pwd
 }
